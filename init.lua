@@ -622,8 +622,8 @@ require('lazy').setup({
       --  By default, Neovim doesn't support everything that is in the LSP specification.
       --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
       --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      Capabilities = vim.lsp.protocol.make_client_capabilities()
+      Capabilities = vim.tbl_deep_extend('force', Capabilities, require('cmp_nvim_lsp').default_capabilities())
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -647,14 +647,14 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
 
-        dartls = {
-          capabilities = capabilities,
-          cmd = { 'dart', 'language-server', '--protocol=lsp' },
-          filetypes = { 'dart' },
-        },
+        -- dartls = {
+        --   capabilities = capabilities,
+        --   cmd = { 'dart', 'language-server', '--protocol=lsp' },
+        --   filetypes = { 'dart' },
+        -- },
 
         yamlls = {
-          capabilities = capabilities,
+          capabilities = Capabilities,
         },
 
         lua_ls = {
@@ -685,12 +685,12 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
 
-      for i = 1, #ensure_installed, 1 do
-        if ensure_installed[i] == 'dartls' then
-          table.remove(ensure_installed, i)
-          break
-        end
-      end
+      -- for i = 1, #ensure_installed, 1 do
+      --   if ensure_installed[i] == 'dartls' then
+      --     table.remove(ensure_installed, i)
+      --     break
+      --   end
+      -- end
 
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
@@ -700,19 +700,111 @@ require('lazy').setup({
       require('mason-lspconfig').setup {
         handlers = {
           function(server_name)
-            if server_name == 'dartls' then
-              return
-            end
+            -- if server_name == 'dartls' then
+            --   return
+            -- end
 
             local server = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+            server.Capabilities = vim.tbl_deep_extend('force', {}, Capabilities, server.Capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
         },
       }
+    end,
+  },
+
+  { -- Flutter Tools
+    'akinsho/flutter-tools.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'stevearc/dressing.nvim', -- optional for vim.ui.select
+    },
+    config = function()
+      vim.keymap.set('n', '<leader>FS', ':FlutterRun <CR>', { desc = 'Flutter run' })
+      vim.keymap.set('n', '<leader>FQ', ':FlutterQuit <CR>', { desc = 'Flutter Quit' })
+      vim.keymap.set('n', '<leader>FR', ':FlutterRestart <CR>', { desc = 'Flutter restart' })
+      vim.keymap.set('n', '<leader>LR', ':FlutterLspRestart <CR>', { desc = 'Flutter lsp restart' })
+      vim.keymap.set('n', '<leader>FD', ':FlutterDevTools <CR>', { desc = 'Flutter open dev tools' })
+
+      require('flutter-tools').setup {
+        ui = {
+          border = 'rounded',
+        },
+        decorations = {
+          statusline = {
+            app_version = false,
+            device = true,
+            project_config = true,
+          },
+        },
+        debugger = {
+          enabled = true,
+        },
+        widget_guides = {
+          enabled = true,
+        },
+        dev_tools = {
+          autostart = true, -- autostart devtools server if not detected
+          auto_open_browser = true, -- Automatically opens devtools in the browser
+        },
+        outline = {
+          auto_open = false,
+        },
+        lsp = { -- dart lsp is auto set by this plugin
+          color = { -- show the derived colours for dart variables
+            enabled = true, -- whether or not to highlight color variables at all, only supported on flutter >= 2.10
+          },
+          capabilities = Capabilities,
+        },
+      }
+    end,
+  },
+
+  { -- Debug Adapter Protocol
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      'rcarriga/nvim-dap-ui',
+      'nvim-neotest/nvim-nio',
+    },
+    config = function()
+      local dap = require 'dap'
+      local dapui = require 'dapui'
+
+      require('dapui').setup()
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      vim.keymap.set('n', '<leader>b', dap.toggle_breakpoint, { desc = 'Toggle breakpoint on current line' })
+      vim.keymap.set('n', '<leader>gb', dap.run_to_cursor, { desc = 'Run to Cursor Breakpoint' })
+      vim.keymap.set('n', '<leader>?', function()
+        require('dapui').eval(nil, {
+          context = 'repl', -- or 'watch', 'hover'
+          width = 50,
+          height = 20,
+          enter = true,
+        })
+      end, { desc = 'Display current value of variable in Debug mode' })
+
+      vim.keymap.set('n', '<F1>', dap.continue, { desc = 'Debug continue' })
+      vim.keymap.set('n', '<F2>', dap.step_into, { desc = 'Debug step into' })
+      vim.keymap.set('n', '<F3>', dap.step_over, { desc = 'Debug step over' })
+      vim.keymap.set('n', '<F4>', dap.step_out, { desc = 'Debug step out' })
+      vim.keymap.set('n', '<F5>', dap.step_back, { desc = 'Debug step back' })
+      vim.keymap.set('n', '<F12>', dap.restart, { desc = 'Debug Restart' })
     end,
   },
 
@@ -750,6 +842,8 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        dart = { 'dart' },
+
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -757,38 +851,6 @@ require('lazy').setup({
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
     },
-  },
-  {
-    'akinsho/flutter-tools.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'stevearc/dressing.nvim', -- optional for vim.ui.select
-    },
-    config = function()
-      vim.keymap.set('n', '<leader>FS', ':FlutterRun <CR>', {})
-      vim.keymap.set('n', '<leader>FQ', ':FlutterQuit <CR>', {})
-      vim.keymap.set('n', '<leader>FR', ':FlutterRestart <CR>', {})
-      vim.keymap.set('n', '<leader>LR', ':FlutterLspRestart <CR>', {})
-      vim.keymap.set('n', '<leader>FD', ':FlutterDevTools <CR>', {})
-
-      require('flutter-tools').setup {
-        decorations = {
-          statusline = {
-            app_version = true,
-            device = true,
-          },
-        },
-        dev_tools = {
-          autostart = true, -- autostart devtools server if not detected
-          auto_open_browser = true, -- Automatically opens devtools in the browser
-        },
-        lsp = {
-          color = { -- show the derived colours for dart variables
-            enabled = true, -- whether or not to highlight color variables at all, only supported on flutter >= 2.10
-          },
-        },
-      }
-    end,
   },
 
   { -- Autocompletion
@@ -811,12 +873,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -839,6 +901,10 @@ require('lazy').setup({
             luasnip.lsp_expand(args.body)
           end,
         },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
         completion = { completeopt = 'menu,menuone,noinsert' },
 
         -- For an understanding of why these mappings were
@@ -859,6 +925,7 @@ require('lazy').setup({
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<C-e>'] = cmp.mapping.abort(),
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
