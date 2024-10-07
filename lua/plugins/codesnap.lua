@@ -1,12 +1,14 @@
 return {
-  { -- Codesnap
+  { -- Codesnap: Snapshot code
     'mistricky/codesnap.nvim',
+
+    lazy = true,
 
     build = 'make build_generator',
 
     keys = {
-      { '<leader>cc', '<cmd>CodeSnap<CR>', mode = 'x', desc = 'Save selected code snapshot into clipboard' },
-      { '<leader>cs', '<cmd>CodeSnapSave<CR>', mode = 'x', desc = 'Save selected code snapshot in ~/Pictures' },
+      { '<leader>cc', '<CMD>CodeSnap<CR>', mode = 'x', desc = 'Save selected code snapshot into clipboard' },
+      { '<leader>cs', '<CMD>CodeSnapSave<CR>', mode = 'x', desc = 'Save selected code snapshot in ~/Pictures' },
     },
 
     opts = {

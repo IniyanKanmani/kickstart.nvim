@@ -1,18 +1,17 @@
 return {
-  { -- Auto Save
+  { -- Auto Save: Auto save
     'okuuva/auto-save.nvim',
 
-    cmd = {
-      'ASToggle',
-    }, -- optional for lazy loading on command
+    enabled = false,
 
-    event = {
-      'InsertLeave',
-      'TextChanged',
-    }, -- optional for lazy loading on trigger events
+    lazy = true,
+
+    cmd = { 'ASToggle' },
+
+    event = { 'InsertLeave', 'TextChanged' },
 
     keys = {
-      { '<leader>as', '<cmd>ASToggle<CR>', mode = 'n', desc = 'Toggle auto save' },
+      { '<leader>as', '<CMD>ASToggle<CR>', mode = 'n', desc = 'Toggle auto save' },
     },
 
     opts = {},

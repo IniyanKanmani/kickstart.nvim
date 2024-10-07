@@ -1,25 +1,70 @@
-return {
-  { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
+return { -- Mini Plugins
+  { -- Mini AI: Better around and inside keymaps
+    'echasnovski/mini.ai',
 
-    config = function()
-      -- Better Around/Inside textobjects
-      --
-      -- Examples:
-      --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
-      --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+    lazy = true,
 
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+    event = 'BufReadPre',
 
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
-    end,
+    opts = {
+      mappings = {
+        goto_left = '[e',
+        goto_right = ']e',
+      },
+
+      n_lines = 500,
+    },
+  },
+
+  { -- Mini Move: Move Selection
+    'echasnovski/mini.move',
+
+    lazy = true,
+
+    event = 'BufReadPre',
+
+    opts = {
+      mappings = {
+        left = 'H',
+        up = 'K',
+        right = 'L',
+        down = 'J',
+
+        line_left = '',
+        line_right = '',
+        line_down = '',
+        line_up = '',
+      },
+    },
+  },
+
+  { -- Mini Operators: Perform operation on text
+    'echasnovski/mini.operators',
+
+    lazy = true,
+
+    event = 'BufReadPre',
+
+    opts = {
+      exchange = {
+        prefix = 'ge',
+      },
+    },
+  },
+
+  { -- Mini SplitJoin: Brackets split and join
+    'echasnovski/mini.splitjoin',
+
+    lazy = true,
+
+    event = 'BufReadPre',
+
+    opts = {
+      mappings = {
+        toggle = 'gT',
+        split = 'gS',
+        join = 'gJ',
+      },
+    },
   },
 }

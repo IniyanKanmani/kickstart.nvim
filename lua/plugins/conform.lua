@@ -1,50 +1,33 @@
 return {
-  { -- Autoformat
+  { -- Conform: Formatter
     'stevearc/conform.nvim',
 
     cmd = { 'ConformInfo' },
 
-    event = { 'BufWritePre' },
-
-    keys = {
-      {
-        '<leader>f',
-        function()
-          require('conform').format { async = true, lsp_format = 'fallback' }
-        end,
-        mode = 'n',
-        desc = '[F]ormat buffer',
-      },
-    },
+    event = { 'BufReadPre', 'BufNewFile' },
 
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        local lsp_format_opt
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          lsp_format_opt = 'never'
-        else
-          lsp_format_opt = 'fallback'
-        end
-        return {
-          timeout_ms = 500,
-          lsp_format = lsp_format_opt,
-        }
-      end,
+      format_on_save = {
+        async = false,
+        timeout_ms = 250,
+        lsp_fallback = true,
+      },
       formatters_by_ft = {
-        lua = { 'stylua' },
         dart = { 'dart' },
-
-        -- Conform can also run multiple formatters sequentially
+        javascript = { 'prettierd' },
+        lua = { 'stylua' },
         python = { 'isort', 'black' },
-
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
+
+    config = function(_, opts)
+      local conform = require 'conform'
+      conform.setup(opts)
+
+      vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
+        conform.format { async = true, lsp_fallback = true }
+      end, { desc = '[F]ormat buffer' })
+    end,
   },
 }

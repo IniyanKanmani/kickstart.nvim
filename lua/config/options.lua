@@ -42,7 +42,7 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = 'yes'
 
 -- Decrease update time
-vim.opt.updatetime = 250
+vim.opt.updatetime = 300
 
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
@@ -71,6 +71,7 @@ vim.opt.scrolloff = 10
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
+vim.opt.autoindent = true
 vim.opt.expandtab = true
 
 -- Sets undo history options
@@ -79,3 +80,10 @@ vim.opt.undodir = os.getenv 'HOME' .. '/.vim/undodir'
 
 -- Sets better colors
 vim.opt.termguicolors = true
+vim.opt.background = 'dark'
+
+-- Sets each modes cursor
+vim.opt.guicursor = 'n-v-c:block,i:ver25,r-cr:hor20,o:hor50'
+
+vim.opt.spelllang = 'en_us'
+vim.opt.spell = true

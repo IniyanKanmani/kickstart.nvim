@@ -1,16 +1,29 @@
 return {
-  { -- Harpoon
-    'theprimeagen/harpoon',
+  { -- Harpoon: Faster way to switch between files
+    'ThePrimeagen/harpoon',
 
-    keys = function()
+    lazy = true,
+
+    keys = {
+      {
+        '<leader>ht',
+        function()
+          require('harpoon.mark').toggle_file()
+        end,
+        mode = 'n',
+        desc = 'Harpoon toggle file',
+      },
+    },
+
+    opts = {},
+
+    config = function()
       local mark = require 'harpoon.mark'
       local ui = require 'harpoon.ui'
 
-      return {
-        { '<leader>ht', mark.toggle_file, mode = 'n', desc = 'Harpoon toggle file' },
-        { '<leader>hc', mark.clear_all, mode = 'n', desc = 'Harpoon clear all' },
-        { '<leader>hm', ui.toggle_quick_menu, mode = 'n', desc = 'Harpoon toggle menu' },
-      }
+      vim.keymap.set('n', '<leader>ht', mark.toggle_file, { desc = 'Harpoon toggle file' })
+      vim.keymap.set('n', '<leader>hc', mark.clear_all, { desc = 'Harpoon clear all' })
+      vim.keymap.set('n', '<leader>hm', ui.toggle_quick_menu, { desc = 'Harpoon toggle menu' })
     end,
   },
 }
